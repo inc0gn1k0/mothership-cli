@@ -11,33 +11,12 @@
 ```bash
 pip install mothership-cli
 
-startup mothership             # Set up folders
-mothership project_alpha       # Create new modular app
-mothership scaffold project_alpha
-mothership push project_alpha
+startup mothership
+
+mothership my_project
+mothership scaffold my_project
+mothership push my_project
 mothership pull https://github.com/you/repo.git
+mothership vaporize my_project
+mothership flush git
 ```
-
-## 🧠 Features
-
-- Clean folder architecture: `Finance/`, `General/`, `Specialist/`
-- Plug-and-play FastAPI boilerplate
-- Auto `venv` + `requirements.txt` on pull
-- GitHub integration for push/pull
-
-## 📦 Project Layout
-
-```
-mothership/
-├── Finance/
-│   └── your_project/
-│       ├── logic/
-│       ├── ui/
-│       ├── web/
-│       └── main.py
-└── ...
-```
-
-## 📮 License
-
-MIT © 2024 Nikolai Janiszewsky
