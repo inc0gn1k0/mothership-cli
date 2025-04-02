@@ -6,10 +6,10 @@
 
 ---
 
-## 🚀 Quick Start
+## 🛸 Quick Start 🛸
 
 ```bash
-pip install mothership-cli
+pip install --upgrade mothership-cli
 
 startup mothership
 
@@ -20,3 +20,6 @@ mothership pull https://github.com/you/repo.git
 mothership vaporize my_project
 mothership flush git
 ```
+
+
+Made with ❤️ in UG 🇺🇬
