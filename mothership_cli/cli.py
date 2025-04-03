@@ -8,15 +8,19 @@ BASE_DIR = Path.home() / "Desktop" / "mothership"
 CATEGORIES = ["Finance", "General", "Specialist"]
 
 def print_help():
-    print("\n🚀 mothership-cli v1.1.5")
+    print("\n🚀 mothership-cli v1.1.6")
     print("Available commands:")
     print("  startup mothership                    Initialize base folders")
     print("  mothership <project>                  Create new project")
     print("  mothership scaffold <project>         Add FastAPI boilerplate")
     print("  mothership pull <git_repo_url>        Clone a repo into mothership")
     print("  mothership push <project>             Git commit + push (with HTTPS fallback)")
+    print("  mothership push <project> [--branch <branch>]   Git commit + push to specific branch")
+    print("  mothership pull <repo_url> [--from <branch>]    Clone repo into mothership (branch-aware)")
+    print("  mothership restore <file> [--from <branch>]     Restore file from main or specific branch")
     print("  mothership flush git                  Remove .git folder from a project")
     print("  mothership vaporize <project>         Delete a project")
+
     print("")
 
 def init_mothership():
@@ -53,17 +57,20 @@ def create_project(project):
     (target_dir / "experimental" / "research.ipynb")
     print(f"✅ Project '{project}' created in {target_map[folder]}")
 
-def push_project(project):
+def push_project(project, branch="main"):
     for cat in CATEGORIES:
         proj_path = BASE_DIR / cat / project
         if proj_path.exists():
             os.chdir(proj_path)
+
             if not (proj_path / ".git").exists():
                 subprocess.run(["git", "init"])
+
+            subprocess.run(["git", "checkout", "-B", branch])
             subprocess.run(["git", "add", "."])
-            subprocess.run(["git", "commit", "-m", "Auto commit by mothership CLI"])
-            subprocess.run(["git", "branch", "-M", "main"])
-            result = subprocess.run(["git", "push", "-u", "origin", "main"])
+            subprocess.run(["git", "commit", "-m", f"Auto commit by mothership CLI to {branch}"], check=False)
+
+            result = subprocess.run(["git", "push", "-u", "origin", branch])
             if result.returncode != 0:
                 print("❌ Push failed. Trying HTTPS fallback...")
                 url = subprocess.getoutput("git remote get-url origin")
@@ -71,28 +78,40 @@ def push_project(project):
                     user_repo = url.replace("git@github.com:", "")
                     https_url = f"https://github.com/{user_repo}"
                     subprocess.run(["git", "remote", "set-url", "origin", https_url])
-                    subprocess.run(["git", "push", "-u", "origin", "main"])
-            print(f"✅ Push attempted for {project}")
+                    subprocess.run(["git", "push", "-u", "origin", branch])
+            print(f"✅ Pushed '{project}' to branch '{branch}'")
             return
     print(f"❌ Project '{project}' not found in mothership.")
 
-def pull_repo(repo_url):
-    name = Path(repo_url).stem
+def pull_repo(repo_url, branch="main"):
+    name = Path(repo_url).stem.replace(".git", "")
     folder = input("Where should it go? (f/g/s): ").strip().lower()
     if folder not in {"f", "g", "s"}:
         print("❌ Invalid input.")
         return
+
     cat = {"f": "Finance", "g": "General", "s": "Specialist"}[folder]
     dest = BASE_DIR / cat / name
+
     if dest.exists():
         print("⚠️  Project already exists, overwriting...")
         shutil.rmtree(dest)
-    subprocess.run(["git", "clone", repo_url, str(dest)])
+
+    subprocess.run(["git", "clone", "--branch", branch, repo_url, str(dest)])
+    
     if (dest / "requirements.txt").exists():
         subprocess.run(["python3", "-m", "venv", "venv"], cwd=dest)
         subprocess.run(["venv/bin/pip", "install", "--upgrade", "pip"], cwd=dest)
         subprocess.run(["venv/bin/pip", "install", "-r", "requirements.txt"], cwd=dest)
-    print(f"✅ Repo '{name}' cloned and environment set up.")
+
+    print(f"✅ Repo '{name}' cloned from branch '{branch}' into {cat}/.")
+
+def restore_file(file, branch="main"):
+    try:
+        subprocess.run(["git", "checkout", branch, "--", file], check=True)
+        print(f"✅ Restored '{file}' from branch '{branch}'.")
+    except subprocess.CalledProcessError:
+        print(f"❌ Could not restore '{file}' from branch '{branch}'.")
 
 def flush_git():
     target = input("Enter project to flush: ").strip()
@@ -133,7 +152,7 @@ def scaffold_project(project):
             return
     print("❌ Project not found.")
 
-VERSION = "1.1.5"
+VERSION = "1.1.6"
 
 def main():
     args = sys.argv[1:]
@@ -151,20 +170,46 @@ def main():
         return
 
     cmd = args[0]
+
     if cmd == "flush" and args[1:] == ["git"]:
         flush_git()
+
     elif cmd == "vaporize":
         vaporize_project()
-    elif cmd == "push" and len(args) == 2:
-        push_project(args[1])
-    elif cmd == "pull" and len(args) == 2:
-        pull_repo(args[1])
+
+    elif cmd == "push":
+        if len(args) == 2:
+            push_project(args[1])  # default to main
+        elif len(args) == 4 and args[2] == "--branch":
+            push_project(args[1], args[3])
+        else:
+            print("❌ Invalid usage. Try: mothership push <project> [--branch <branch>]")
+
+    elif cmd == "pull":
+        if len(args) == 2:
+            pull_repo(args[1])  # default to main
+        elif len(args) == 4 and args[2] == "--from":
+            pull_repo(args[1], args[3])
+        else:
+            print("❌ Invalid usage. Try: mothership pull <repo_url> [--from <branch>]")
+
+    elif cmd == "restore":
+        if len(args) == 2:
+            restore_file(args[1])  # default to main
+        elif len(args) == 4 and args[2] == "--from":
+            restore_file(args[1], args[3])
+        else:
+            print("❌ Invalid usage. Try: mothership restore <file> [--from <branch>]")
+
     elif cmd == "scaffold" and len(args) == 2:
         scaffold_project(args[1])
+
     elif len(args) == 1:
         create_project(args[0])
+
     else:
         print_help()
+
 
 if __name__ == "__main__":
     main()
