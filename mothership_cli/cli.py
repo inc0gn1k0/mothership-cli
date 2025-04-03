@@ -8,7 +8,7 @@ BASE_DIR = Path.home() / "Desktop" / "mothership"
 CATEGORIES = ["Finance", "General", "Specialist"]
 
 def print_help():
-    print("\n🚀 mothership-cli v1.1.7")
+    print("\n🚀 mothership-cli v1.1.8")
     print("Available commands:")
     print("  startup mothership                    Initialize base folders")
     print("  mothership <project>                  Create new project")
@@ -54,7 +54,7 @@ def create_project(project):
     (target_dir / "logic" / "utils.py").write_text("# Utility functions live here\\n")
     (target_dir / "ui" / "__init__.py").write_text("# UI package init\n")
     (target_dir / "ui" / "interface.py").write_text("# UI logic here\\n")
-    (target_dir / "experimental" / "research.ipynb").write_text("# Research notes and experiments\n")
+    (target_dir / "experimental" / "research.ipynb").write_text("")
     print(f"✅ Project '{project}' created in {target_map[folder]}")
 
 def push_project(project, branch="main"):
@@ -152,7 +152,7 @@ def scaffold_project(project):
             return
     print("❌ Project not found.")
 
-VERSION = "1.1.7"
+VERSION = "1.1.8"
 
 def main():
     args = sys.argv[1:]
