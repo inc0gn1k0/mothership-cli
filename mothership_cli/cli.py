@@ -8,7 +8,7 @@ BASE_DIR = Path.home() / "Desktop" / "mothership"
 CATEGORIES = ["Finance", "General", "Specialist"]
 
 def print_help():
-    print("\n🚀 mothership-cli v1.1.6")
+    print("\n🚀 mothership-cli v1.1.7")
     print("Available commands:")
     print("  startup mothership                    Initialize base folders")
     print("  mothership <project>                  Create new project")
@@ -48,13 +48,13 @@ def create_project(project):
     (target_dir / "README.md").write_text(f"# {project}\n\nProject scaffolded by mothership-cli.")
     (target_dir / "requirements.txt").write_text("")
     (target_dir / ".gitignore").write_text("venv/\n__pycache__/\n.env\n")
-    (target_dir / "logic" / "__init__.py").write_text("")
+    (target_dir / "logic" / "__init__.py").write_text("# Logic package init\n")
     (target_dir / "logic" / "core.py").write_text("# Core logic lives here\\n")
     (target_dir / "logic" / "data.py").write_text("# Data lives here\\n")
     (target_dir / "logic" / "utils.py").write_text("# Utility functions live here\\n")
-    (target_dir / "ui" / "__init__.py").write_text("")
+    (target_dir / "ui" / "__init__.py").write_text("# UI package init\n")
     (target_dir / "ui" / "interface.py").write_text("# UI logic here\\n")
-    (target_dir / "experimental" / "research.ipynb")
+    (target_dir / "experimental" / "research.ipynb").write_text("# Research notes and experiments\n")
     print(f"✅ Project '{project}' created in {target_map[folder]}")
 
 def push_project(project, branch="main"):
@@ -152,7 +152,7 @@ def scaffold_project(project):
             return
     print("❌ Project not found.")
 
-VERSION = "1.1.6"
+VERSION = "1.1.7"
 
 def main():
     args = sys.argv[1:]
